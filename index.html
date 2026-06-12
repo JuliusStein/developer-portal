@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Formlabs API Developer Portal</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <aside class="sidebar" aria-label="Portal navigation">
+      <a class="brand" href="#top" aria-label="Formlabs API portal home">
+        <img src="https://formlabs-dashboard-api-resources.s3.amazonaws.com/Formlabs-Logo-rgb-black.svg" alt="Formlabs">
+        <span>API Portal</span>
+      </a>
+      <nav>
+        <a href="#getting-started">Getting Started</a>
+        <a href="#http">HTTP API Routes</a>
+        <a href="#sdk">Python SDK</a>
+        <a href="#reference">Function Reference</a>
+        <a href="#examples">Examples</a>
+        <a href="#sources">Sources</a>
+      </nav>
+    </aside>
+
+    <main id="top">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Local automation, Dashboard monitoring, and Python workflows</p>
+          <h1>Build with the Formlabs API</h1>
+          <p class="hero-copy">
+            A practical guide for choosing the right integration route, making your first HTTP calls,
+            installing the Python SDK, and finding the endpoint or SDK function you need.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="#getting-started">Start building</a>
+            <a class="button" href="#reference">Browse reference</a>
+          </div>
+        </div>
+        <div class="status-panel" aria-label="API route summary">
+          <div>
+            <span class="status-dot local"></span>
+            <strong>Local API</strong>
+            <p>Run PreFormServer on a workstation and automate scene prep, materials, devices, and print upload.</p>
+          </div>
+          <div>
+            <span class="status-dot cloud"></span>
+            <strong>Web API</strong>
+            <p>Use Dashboard credentials to monitor printers, prints, events, cartridges, tanks, and groups.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="getting-started" class="section">
+        <div class="section-heading">
+          <p class="eyebrow">Getting started</p>
+          <h2>Pick the route that matches your integration</h2>
+          <p>
+            The Formlabs APIs are REST-style HTTP APIs. Use the Local API when the workflow
+            needs PreFormServer and local files; use the Web API when the workflow needs
+            Dashboard-connected devices and account data.
+          </p>
+        </div>
+
+        <div class="route-grid">
+          <article class="route-card">
+            <div class="card-header">
+              <span class="pill">Local</span>
+              <h3>Automate job preparation on a workstation</h3>
+            </div>
+            <ol>
+              <li>Download PreFormServer for macOS or Windows from the Formlabs API downloads page.</li>
+              <li>Start it with an explicit port, commonly <code>44388</code>.</li>
+              <li>Wait for <code>READY FOR INPUT</code> before sending requests.</li>
+              <li>Use absolute local file paths when loading or saving models and scenes.</li>
+            </ol>
+            <pre><code>PreFormServer.exe --port 44388
+
+curl http://localhost:44388/
+curl http://localhost:44388/scene/</code></pre>
+          </article>
+
+          <article class="route-card">
+            <div class="card-header">
+              <span class="pill blue">Cloud</span>
+              <h3>Monitor Dashboard-connected printers</h3>
+            </div>
+            <ol>
+              <li>Create Formlabs Dashboard application credentials.</li>
+              <li>Request an OAuth access token with <code>client_credentials</code>.</li>
+              <li>Send the token as <code>Authorization: Bearer ...</code>.</li>
+              <li>Respect rate limits and refresh tokens before they expire.</li>
+            </ol>
+            <pre><code>curl -X POST https://api.formlabs.com/developer/v1/o/token/ \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=$CLIENT_ID" \
+  -d "client_secret=$CLIENT_SECRET"
+
+curl https://api.formlabs.com/developer/v1/printers/ \
+  -H "Authorization: Bearer $ACCESS_TOKEN"</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="http" class="section split">
+        <div>
+          <p class="eyebrow">HTTP fundamentals</p>
+          <h2>Use predictable requests and JSON responses</h2>
+          <p>
+            Both APIs expose resources over HTTP. The Local API defaults to
+            <code>http://localhost:44388</code>; the Web API defaults to
+            <code>https://api.formlabs.com</code>. Successful responses use conventional
+            <code>2xx</code> status codes, client errors use <code>4xx</code>, and server
+            errors use <code>5xx</code>.
+          </p>
+        </div>
+        <div class="callout-list">
+          <div><strong>Local state</strong><p>Scenes are cached while PreFormServer runs. Prefer explicit scene IDs over deprecated default-scene endpoints.</p></div>
+          <div><strong>Async work</strong><p>Long-running Local API operations can use <code>?async=true</code> and then be polled through operations endpoints.</p></div>
+          <div><strong>Web limits</strong><p>The Web API documents per-IP and per-user limits. Handle <code>429</code> responses with the provided retry timing.</p></div>
+        </div>
+      </section>
+
+      <section id="sdk" class="section">
+        <div class="section-heading">
+          <p class="eyebrow">Python SDK</p>
+          <h2>Install the SDK packages from the Formlabs repo</h2>
+          <p>
+            The SDK repository includes a minimal Local API helper, generated Local and Web
+            clients, and runnable examples. The generated clients give typed request models;
+            the minimal local package leaves request formatting in your code.
+          </p>
+        </div>
+        <div class="sdk-grid">
+          <pre><code>git clone https://github.com/Formlabs/formlabs-api-python.git
+cd formlabs-api-python
+
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m ensurepip --default-pip
+
+python3 -m pip install -e local-api/minimal-lib
+python3 -m pip install -e local-api/lib
+python3 -m pip install -e web-api/lib</code></pre>
+          <pre><code>import formlabs_local_api as formlabs
+
+configuration = formlabs.Configuration(
+    host="http://localhost:44388",
+)
+
+with formlabs.ApiClient(configuration) as api_client:
+    api = formlabs.APIInfoApi(api_client)
+    print(api.get_api_version())</code></pre>
+        </div>
+      </section>
+
+      <section id="reference" class="section">
+        <div class="section-heading compact">
+          <p class="eyebrow">Function reference</p>
+          <h2>HTTP endpoints mapped to SDK functions</h2>
+          <p>
+            Filter by Local or Web API, search by endpoint/function/model, and open any row
+            for parameters, return type, status codes, and a Python call shape.
+          </p>
+        </div>
+        <div class="toolbar" role="search">
+          <input id="search" type="search" placeholder="Search functions, endpoints, or descriptions">
+          <div class="segmented" aria-label="API filter">
+            <button class="active" data-filter="all" type="button">All</button>
+            <button data-filter="Local API + SDK" type="button">Local</button>
+            <button data-filter="Web API + SDK" type="button">Web</button>
+          </div>
+        </div>
+        <div id="reference-list" class="reference-list"></div>
+      </section>
+
+      <section id="examples" class="section">
+        <div class="section-heading compact">
+          <p class="eyebrow">Examples</p>
+          <h2>Recipes from the Python SDK repository</h2>
+          <p>
+            These examples are summarized from the SDK repository and can be used as starting
+            points for local server automation, Dashboard API authentication, batching, print
+            dialogs, and simple web applications.
+          </p>
+        </div>
+        <div id="examples-list" class="examples-list"></div>
+      </section>
+
+      <section id="sources" class="section sources">
+        <p class="eyebrow">Sources</p>
+        <h2>Original Formlabs documentation</h2>
+        <ul>
+          <li><a href="https://formlabs-dashboard-api-resources.s3.amazonaws.com/formlabs-local-api-latest.html">Local API reference</a></li>
+          <li><a href="https://formlabs-dashboard-api-resources.s3.amazonaws.com/formlabs-web-api-latest.html">Web API reference</a></li>
+          <li><a href="https://support.formlabs.com/s/article/Formlabs-API-downloads-and-release-notes?language=en_US">API downloads and release notes</a></li>
+          <li><a href="https://github.com/Formlabs/formlabs-api-python">Formlabs Python SDK</a></li>
+          <li><a href="https://github.com/Formlabs/formlabs-api-python/tree/main/local-api/lib/docs">Generated Local API SDK docs</a></li>
+          <li><a href="https://github.com/Formlabs/formlabs-api-python/tree/main/examples">SDK examples</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="assets/formlabs-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

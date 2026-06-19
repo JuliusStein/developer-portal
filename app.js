@@ -11,6 +11,9 @@ const httpFilterButtons = document.querySelectorAll("[data-http-filter]");
 const sdkFilterButtons = document.querySelectorAll("[data-sdk-filter]");
 const apiJumpLinks = document.querySelectorAll("[data-api-target]");
 const codeSwitchers = document.querySelectorAll("[data-code-switcher]");
+const httpDocumentation = document.querySelector(".http-documentation");
+const sdkExpandAllButton = document.querySelector("[data-sdk-expand-all]");
+const sdkCollapseAllButton = document.querySelector("[data-sdk-collapse-all]");
 
 let activeHttpFilter = "all";
 let activeSdkFilter = "all";
@@ -111,6 +114,12 @@ const docHaystack = (doc) => [
 
 const shortSdkSymbol = (title) =>
   title.replace(/^formlabs_(local|web)_api\./, "");
+
+const isDeprecatedSdkRow = (row) =>
+  /deprecated/i.test(row.group) ||
+  /deprecated/i.test(row.symbol) ||
+  /deprecated/i.test(row.summary || "") ||
+  /deprecated/i.test(row.method?.description || "");
 
 const setActiveButton = (buttons, attribute, value) => {
   buttons.forEach((button) => {
@@ -223,7 +232,7 @@ const renderSdkReference = () => {
 
     return [{
       doc,
-      group: "Models",
+      group: doc.source.startsWith("Local") ? "Local Models" : "Web Models",
       type: "Model",
       symbol: className,
       summary: doc.summary,
@@ -232,6 +241,10 @@ const renderSdkReference = () => {
   });
 
   const filtered = sdkRows.filter((row) => {
+    if (isDeprecatedSdkRow(row)) {
+      return false;
+    }
+
     if (row.type === "Model" && row.summary === "Generated Python SDK documentation.") {
       return false;
     }
@@ -260,28 +273,44 @@ const renderSdkReference = () => {
   });
 
   const visibleTotal = sdkRows.filter((row) =>
+    !isDeprecatedSdkRow(row) &&
     !(row.type === "Model" && row.summary === "Generated Python SDK documentation.")
   ).length;
   sdkCount.textContent = `${filtered.length}/${visibleTotal}`;
 
   let lastGroup = "";
+  let groupIndex = -1;
   const rows = filtered.map((row, index) => {
     const groupKey = `${row.doc.source}:${row.group}`;
-    const groupRow = groupKey !== lastGroup
-      ? `<tr class="reference-group-row"><td>${sourceBadge(row.doc.source)}</td><td colspan="4"><strong>${escapeHtml(row.group)}</strong></td></tr>`
-      : "";
-    lastGroup = groupKey;
+    let groupRow = "";
+    if (groupKey !== lastGroup) {
+      groupIndex += 1;
+      groupRow = `
+        <tr class="reference-group-row" data-sdk-group="${groupIndex}">
+          <td colspan="5">
+            <button class="group-toggle" type="button" data-sdk-group-toggle="${groupIndex}" aria-expanded="true">
+              <span class="group-title">
+                <span class="class-pill">Class</span>
+                <strong>${escapeHtml(row.group)}</strong>
+              </span>
+              <span class="group-indicator" aria-hidden="true">⌃</span>
+            </button>
+          </td>
+        </tr>
+      `;
+      lastGroup = groupKey;
+    }
 
     return `
       ${groupRow}
-      <tr class="reference-row">
+      <tr class="reference-row" data-sdk-group-member="${groupIndex}">
         <td data-label="SDK">${sourceBadge(row.doc.source)}</td>
         <td data-label="Type">${escapeHtml(row.type)}</td>
         <td data-label="Python symbol"><strong>${escapeHtml(row.symbol)}</strong></td>
         <td data-label="Description">${escapeHtml(row.summary || "Generated SDK documentation.")}</td>
         <td data-label="Action"><button class="detail-toggle" type="button" data-detail="sdk-${index}">Details</button></td>
       </tr>
-      <tr id="sdk-${index}" class="detail-row" hidden>
+      <tr id="sdk-${index}" class="detail-row" data-sdk-group-member="${groupIndex}" hidden>
         <td colspan="5">
           <div class="sdk-detail">
           ${row.method ? apiMethodBlocks([row.method]) : `
@@ -324,6 +353,7 @@ const renderSdkReference = () => {
   }
 
   bindDetailToggles(sdkList);
+  bindSdkGroupToggles();
 };
 
 const bindDetailToggles = (root) => {
@@ -333,6 +363,39 @@ const bindDetailToggles = (root) => {
       const open = row.hasAttribute("hidden");
       row.toggleAttribute("hidden", !open);
       button.textContent = open ? "Hide" : "Details";
+    });
+  });
+};
+
+const setSdkGroupOpen = (groupId, open) => {
+  const toggle = sdkList.querySelector(`[data-sdk-group-toggle="${groupId}"]`);
+  if (!toggle) return;
+
+  toggle.setAttribute("aria-expanded", String(open));
+  const indicator = toggle.querySelector(".group-indicator");
+  if (indicator) indicator.textContent = open ? "⌃" : "⌄";
+
+  sdkList.querySelectorAll(`[data-sdk-group-member="${groupId}"]`).forEach((row) => {
+    if (row.classList.contains("detail-row")) {
+      row.hidden = true;
+    } else {
+      row.hidden = !open;
+    }
+  });
+
+  if (!open) {
+    sdkList.querySelectorAll(`[data-sdk-group-member="${groupId}"] .detail-toggle`).forEach((button) => {
+      button.textContent = "Details";
+    });
+  }
+};
+
+const bindSdkGroupToggles = () => {
+  sdkList.querySelectorAll("[data-sdk-group-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const groupId = button.dataset.sdkGroupToggle;
+      const open = button.getAttribute("aria-expanded") !== "true";
+      setSdkGroupOpen(groupId, open);
     });
   });
 };
@@ -593,15 +656,27 @@ sdkFilterButtons.forEach((button) => {
   });
 });
 
+sdkExpandAllButton?.addEventListener("click", () => {
+  sdkList.querySelectorAll("[data-sdk-group-toggle]").forEach((button) => {
+    setSdkGroupOpen(button.dataset.sdkGroupToggle, true);
+  });
+});
+
+sdkCollapseAllButton?.addEventListener("click", () => {
+  sdkList.querySelectorAll("[data-sdk-group-toggle]").forEach((button) => {
+    setSdkGroupOpen(button.dataset.sdkGroupToggle, false);
+  });
+});
+
 apiJumpLinks.forEach((link) => {
   link.addEventListener("click", () => {
     const target = link.dataset.apiTarget;
     activeHttpFilter = target === "local" ? "Local API" : "Web API";
-    activeSdkFilter = target === "local" ? "Local SDK" : "Web SDK";
+    if (httpDocumentation) {
+      httpDocumentation.open = true;
+    }
     setActiveButton(httpFilterButtons, "httpFilter", activeHttpFilter);
-    setActiveButton(sdkFilterButtons, "sdkFilter", activeSdkFilter);
     renderHttpReference();
-    renderSdkReference();
   });
 });
 

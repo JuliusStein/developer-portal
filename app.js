@@ -26,6 +26,40 @@ const escapeHtml = (value = "") =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
+const highlightPython = (source) => {
+  const keywords = "and|as|assert|async|await|break|class|continue|def|del|elif|else|except|False|finally|for|from|global|if|import|in|is|lambda|None|nonlocal|not|or|pass|raise|return|True|try|while|with|yield";
+  const builtins = "dict|enumerate|float|int|len|list|open|print|range|set|str|super|tuple";
+  const pattern = new RegExp(
+    `(#.*$)|(\"\"\"[\\s\\S]*?\"\"\"|'''[\\s\\S]*?'''|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*')|\\b(${keywords})\\b|\\b(${builtins})\\b|\\b(\\d+(?:\\.\\d+)?)\\b`,
+    "gm",
+  );
+
+  let highlighted = "";
+  let cursor = 0;
+  source.replace(pattern, (match, comment, string, keyword, builtin, number, offset) => {
+    highlighted += escapeHtml(source.slice(cursor, offset));
+    const escaped = escapeHtml(match);
+    if (comment) highlighted += `<span class="py-comment">${escaped}</span>`;
+    else if (string) highlighted += `<span class="py-string">${escaped}</span>`;
+    else if (keyword) highlighted += `<span class="py-keyword">${escaped}</span>`;
+    else if (builtin) highlighted += `<span class="py-builtin">${escaped}</span>`;
+    else if (number) highlighted += `<span class="py-number">${escaped}</span>`;
+    else highlighted += escaped;
+    cursor = offset + match.length;
+    return match;
+  });
+  highlighted += escapeHtml(source.slice(cursor));
+  return highlighted;
+};
+
+const highlightPythonSnippets = (root = document) => {
+  root.querySelectorAll("code.language-python").forEach((code) => {
+    if (code.dataset.highlighted === "true") return;
+    code.innerHTML = highlightPython(code.textContent);
+    code.dataset.highlighted = "true";
+  });
+};
+
 const sourceBadge = (source) => {
   const local = source.startsWith("Local");
   return `<span class="pill${local ? "" : " blue"}">${local ? "Local" : "Web"}</span>`;
@@ -85,7 +119,7 @@ const apiMethodBlocks = (methods) => {
       <p><code>${escapeHtml(method.returnType || "See upstream schema")}</code></p>
       <h4>HTTP responses</h4>
       ${statusesTable(method.statuses)}
-      ${method.example ? `<pre><code>${escapeHtml(method.example)}</code></pre>` : ""}
+      ${method.example ? `<pre><code class="language-python">${escapeHtml(method.example)}</code></pre>` : ""}
     </section>
   `).join("");
 };
@@ -288,12 +322,12 @@ const renderSdkReference = () => {
       groupRow = `
         <tr class="reference-group-row" data-sdk-group="${groupIndex}">
           <td colspan="5">
-            <button class="group-toggle" type="button" data-sdk-group-toggle="${groupIndex}" aria-expanded="true">
+            <button class="group-toggle" type="button" data-sdk-group-toggle="${groupIndex}" aria-expanded="false">
               <span class="group-title">
                 <span class="class-pill">Class</span>
                 <strong>${escapeHtml(row.group)}</strong>
               </span>
-              <span class="group-indicator" aria-hidden="true">⌃</span>
+              <span class="group-indicator" aria-hidden="true">▾</span>
             </button>
           </td>
         </tr>
@@ -303,7 +337,7 @@ const renderSdkReference = () => {
 
     return `
       ${groupRow}
-      <tr class="reference-row" data-sdk-group-member="${groupIndex}">
+      <tr class="reference-row" data-sdk-group-member="${groupIndex}" hidden>
         <td data-label="SDK">${sourceBadge(row.doc.source)}</td>
         <td data-label="Type">${escapeHtml(row.type)}</td>
         <td data-label="Python symbol"><strong>${escapeHtml(row.symbol)}</strong></td>
@@ -318,7 +352,7 @@ const renderSdkReference = () => {
               <h4>Model properties</h4>
               ${paramsTable(row.doc.properties, "No model properties documented.")}
             </div>
-            ${row.doc.example ? `<pre><code>${escapeHtml(row.doc.example)}</code></pre>` : ""}
+            ${row.doc.example ? `<pre><code class="language-python">${escapeHtml(row.doc.example)}</code></pre>` : ""}
           `}
           </div>
         </td>
@@ -354,6 +388,7 @@ const renderSdkReference = () => {
 
   bindDetailToggles(sdkList);
   bindSdkGroupToggles();
+  highlightPythonSnippets(sdkList);
 };
 
 const bindDetailToggles = (root) => {
@@ -373,7 +408,7 @@ const setSdkGroupOpen = (groupId, open) => {
 
   toggle.setAttribute("aria-expanded", String(open));
   const indicator = toggle.querySelector(".group-indicator");
-  if (indicator) indicator.textContent = open ? "⌃" : "⌄";
+  if (indicator) indicator.textContent = open ? "▴" : "▾";
 
   sdkList.querySelectorAll(`[data-sdk-group-member="${groupId}"]`).forEach((row) => {
     if (row.classList.contains("detail-row")) {
@@ -631,13 +666,14 @@ const renderExamples = () => {
                 <div class="file-label">${escapeHtml(file.path)}</div>
               </div>
             ` : ""}
-            <pre><code>${escapeHtml(file.code)}</code></pre>
+            <pre><code${file.path.endsWith(".py") ? ' class="language-python"' : ""}>${escapeHtml(file.code)}</code></pre>
           </section>
         `).join("")}
       </div>
     </article>
   `;
   }).join("");
+  highlightPythonSnippets(examplesList);
 };
 
 httpFilterButtons.forEach((button) => {
@@ -671,12 +707,9 @@ sdkCollapseAllButton?.addEventListener("click", () => {
 apiJumpLinks.forEach((link) => {
   link.addEventListener("click", () => {
     const target = link.dataset.apiTarget;
-    activeHttpFilter = target === "local" ? "Local API" : "Web API";
-    if (httpDocumentation) {
-      httpDocumentation.open = true;
-    }
-    setActiveButton(httpFilterButtons, "httpFilter", activeHttpFilter);
-    renderHttpReference();
+    activeSdkFilter = target === "local" ? "Local SDK" : "Web SDK";
+    setActiveButton(sdkFilterButtons, "sdkFilter", activeSdkFilter);
+    renderSdkReference();
   });
 });
 
@@ -701,3 +734,4 @@ sdkSearch.addEventListener("input", renderSdkReference);
 renderHttpReference();
 renderSdkReference();
 renderExamples();
+highlightPythonSnippets();

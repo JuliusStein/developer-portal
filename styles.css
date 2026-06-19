@@ -64,6 +64,34 @@ pre code {
   color: inherit;
 }
 
+pre code.language-python {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.py-keyword {
+  color: #7dd3fc;
+  font-weight: 720;
+}
+
+.py-builtin {
+  color: #facc15;
+}
+
+.py-string {
+  color: #86efac;
+}
+
+.py-comment {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.py-number {
+  color: #f9a8d4;
+}
+
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -579,10 +607,10 @@ li + li {
 
 .scroll-pane {
   min-height: 0;
-  height: clamp(420px, 58vh, 640px);
-  overflow: auto;
+  height: auto;
+  max-height: none;
+  overflow: visible;
   padding: 0 1rem 1rem;
-  overscroll-behavior: contain;
 }
 
 input[type="search"] {
@@ -633,7 +661,7 @@ input[type="search"] {
 .reference-list,
 .sdk-list {
   display: block;
-  overflow: auto;
+  overflow: visible;
 }
 
 .reference-table {
@@ -794,13 +822,15 @@ input[type="search"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.45rem;
-  height: 1.45rem;
+  width: 2rem;
+  height: 2rem;
   border: 1px solid #9fb9b5;
   border-radius: 999px;
   background: #fff;
   color: #14534e;
+  font-size: 1.35rem;
   font-weight: 820;
+  line-height: 1;
 }
 
 .detail-row td {
@@ -1421,13 +1451,13 @@ input[type="search"] {
   }
 
   .scroll-pane {
-    max-height: 520px;
-    overflow-x: hidden;
+    max-height: none;
+    overflow: visible;
   }
 
   .reference-list,
   .sdk-list {
-    overflow-x: hidden;
+    overflow: visible;
   }
 
   .reference-table {

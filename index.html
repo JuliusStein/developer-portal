@@ -36,12 +36,12 @@
           </div>
         </div>
         <div class="status-panel" aria-label="API route summary">
-          <a href="#http-documentation" class="api-jump" data-api-target="local">
+          <a href="#reference" class="api-jump" data-api-target="local">
             <span class="status-dot local"></span>
             <strong>Local API</strong>
             <p>Run PreFormServer on a workstation and automate scene prep, materials, devices, and print upload.</p>
           </a>
-          <a href="#http-documentation" class="api-jump" data-api-target="web">
+          <a href="#reference" class="api-jump" data-api-target="web">
             <span class="status-dot cloud"></span>
             <strong>Web API</strong>
             <p>Use Dashboard credentials to monitor printers, prints, events, cartridges, tanks, and groups.</p>
@@ -88,7 +88,7 @@ py -3 -m pip install -e web-api/lib</code></pre>
           </div>
           <div class="code-block">
             <span class="language-badge python">Python</span>
-            <pre><code>import formlabs_local_api as formlabs
+            <pre><code class="language-python">import formlabs_local_api as formlabs
 
 configuration = formlabs.Configuration(
     host="http://localhost:44388",

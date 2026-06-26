@@ -5,8 +5,6 @@ const sdkList = document.querySelector("#sdk-reference-list");
 const examplesList = document.querySelector("#examples-list");
 const httpSearch = document.querySelector("#http-search");
 const sdkSearch = document.querySelector("#sdk-search");
-const httpCount = document.querySelector("#http-count");
-const sdkCount = document.querySelector("#sdk-count");
 const httpFilterButtons = document.querySelectorAll("[data-http-filter]");
 const sdkFilterButtons = document.querySelectorAll("[data-sdk-filter]");
 const apiJumpLinks = document.querySelectorAll("[data-api-target]");
@@ -178,8 +176,6 @@ const renderHttpReference = () => {
     return matchesFilter && (!query || haystack.includes(query));
   });
 
-  httpCount.textContent = `${filtered.length}/${data.endpoints.length}`;
-
   const rows = filtered.map((item, index) => {
     const detail = item.detail || {};
     const verbClass = item.verb.toLowerCase();
@@ -305,12 +301,6 @@ const renderSdkReference = () => {
     if (groupCompare) return groupCompare;
     return a.symbol.localeCompare(b.symbol);
   });
-
-  const visibleTotal = sdkRows.filter((row) =>
-    !isDeprecatedSdkRow(row) &&
-    !(row.type === "Model" && row.summary === "Generated Python SDK documentation.")
-  ).length;
-  sdkCount.textContent = `${filtered.length}/${visibleTotal}`;
 
   let lastGroup = "";
   let groupIndex = -1;
@@ -442,34 +432,16 @@ const exampleDetails = (path) => {
       text: "Shows the smallest useful Dashboard API workflow: exchange client credentials for an access token, call the Web API with a bearer token, and print live printer status. Use this as the starting point for cloud monitoring tools, reporting jobs, or integrations that need account-level printer data.",
     };
   }
-  if (path.includes("hello-server-minimal")) {
-    return {
-      art: "server",
-      text: "Demonstrates the minimal Local API helper path for starting PreFormServer and making direct HTTP requests from your own code. It is useful when you want predictable request formatting, fewer generated-client dependencies, and a clear view of the underlying local server lifecycle.",
-    };
-  }
   if (path.includes("hello-server")) {
     return {
       art: "server",
       text: "Creates a basic local print scene through the generated Local API client after launching PreFormServer. This is the clearest first example for desktop automation workflows that need to choose a printer family, material, layer thickness, and scene type before doing more advanced preparation.",
     };
   }
-  if (path.includes("batching-minimal")) {
-    return {
-      art: "batch",
-      text: "Illustrates a lightweight batching workflow using direct Local API calls. Use it when you want to loop through model inputs, submit repeated scene operations, and keep the surrounding automation logic in your own application rather than relying on the generated SDK types.",
-    };
-  }
   if (path.includes("batching")) {
     return {
       art: "batch",
       text: "Builds a fuller local batching flow for preparing multiple jobs with PreFormServer. It is a practical pattern for production environments where many parts need the same repeatable preparation steps before export, validation, or upload to a printer.",
-    };
-  }
-  if (path.includes("list-materials")) {
-    return {
-      art: "materials",
-      text: "Queries the Local API for supported printer, material, and print-setting combinations. This is especially useful before creating scenes because it lets your integration populate valid options, avoid unsupported combinations, and keep user choices aligned with PreFormServer capabilities.",
     };
   }
   if (path.includes("print-dialog")) {
@@ -520,14 +492,63 @@ const exampleDetails = (path) => {
   };
 };
 
-const exampleArt = (type) => `
-  <div class="example-art ${escapeHtml(type)}" aria-hidden="true">
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-`;
+const exampleArt = (type) => {
+  const icons = {
+    cloud: `
+      <path d="M29 55h40a17 17 0 0 0 0-34 22 22 0 0 0-42-5 19 19 0 0 0 2 39Z" />
+      <path d="M36 67h28" />
+    `,
+    server: `
+      <rect x="31" y="18" width="38" height="60" rx="6" />
+      <path d="M41 32h18M41 46h18M41 60h10" />
+      <circle cx="58" cy="61" r="4" />
+    `,
+    batch: `
+      <path class="icon-fill muted" d="M31 33h42v42H31z" />
+      <path class="icon-fill muted" d="M25 39h42v42H25z" />
+      <path class="icon-fill" d="M19 45h42v42H19z" />
+      <path d="M28 58h20M28 68h18M28 78h12" />
+    `,
+    dialog: `
+      <rect x="19" y="21" width="62" height="52" rx="7" />
+      <path d="M19 36h62M32 52h20M32 62h32" />
+      <path d="M65 50l8 8-8 8" />
+    `,
+    invite: `
+      <circle cx="38" cy="35" r="12" />
+      <path d="M19 72c3-14 12-22 19-22s16 8 19 22" />
+      <path d="M66 36v24M54 48h24" />
+    `,
+    webapp: `
+      <rect x="18" y="20" width="64" height="58" rx="7" />
+      <path d="M18 36h64" />
+      <path d="M38 50h16v16H38zM58 50h10v10H58zM30 59h8v8h-8z" />
+      <path d="M30 46h38M28 72h44" />
+    `,
+    speed: `
+      <path d="M23 55h35" />
+      <path d="M54 34l20 20-20 20" />
+      <path d="M25 36h18M19 46h24M19 64h24" />
+    `,
+    guide: `
+      <path d="M30 18h31l12 12v52H30z" />
+      <path d="M61 18v13h12M40 45h23M40 57h23M40 69h14" />
+    `,
+    deps: `
+      <path d="M32 24h36v52H32z" />
+      <path d="M41 38h18M41 50h18M41 62h10" />
+      <path d="M67 64h13v13H67z" />
+    `,
+  };
+
+  return `
+    <div class="example-art ${escapeHtml(type)}" aria-hidden="true">
+      <svg viewBox="0 0 100 100" focusable="false">
+        ${icons[type] || icons.guide}
+      </svg>
+    </div>
+  `;
+};
 
 const exampleTag = (path) => {
   if (path.includes("web") || path.includes("group")) return "Web API";
@@ -543,42 +564,12 @@ const buildExampleCards = () => {
   const file = (path) => byPath.get(path);
   const files = (...paths) => paths.map(file).filter(Boolean);
 
-  const webFiles = [
-    ...files("hello-web-api.py"),
-    ...data.examples.filter((example) => example.path.startsWith("web-api-send-group-invitations/")),
-  ];
+  const sendGroupInvitationFiles = files(
+    "web-api-send-group-invitations/requirements.txt",
+    "web-api-send-group-invitations/main.py"
+  );
 
   const cards = [
-    {
-      key: "web-api-examples",
-      title: "Web API workflows",
-      path: "web-api-examples/",
-      tag: "Web API",
-      art: "cloud",
-      download: exampleDownloadHref("web-api-examples"),
-      text: "Combines the two Dashboard/Web API examples into one downloadable folder. The first file demonstrates the core OAuth client-credentials flow and a printer status request. The folder example extends that pattern into group administration, showing the supporting README, dependencies, and Python entry point together so teams can adapt the whole workflow instead of copying individual fragments.",
-      files: webFiles,
-    },
-    {
-      key: "batching",
-      title: "Batching",
-      path: "batching.py",
-      tag: "Local API",
-      art: "batch",
-      download: exampleDownloadHref("batching"),
-      text: exampleDetails("batching.py").text,
-      files: files("batching.py"),
-    },
-    {
-      key: "batching-minimal",
-      title: "Batching Minimal",
-      path: "batching-minimal.py",
-      tag: "Local API",
-      art: "batch",
-      download: exampleDownloadHref("batching-minimal"),
-      text: exampleDetails("batching-minimal.py").text,
-      files: files("batching-minimal.py"),
-    },
     {
       key: "hello-server",
       title: "Hello Server",
@@ -590,24 +581,24 @@ const buildExampleCards = () => {
       files: files("hello-server.py"),
     },
     {
-      key: "hello-server-minimal",
-      title: "Hello Server Minimal",
-      path: "hello-server-minimal.py",
-      tag: "Local API",
-      art: "server",
-      download: exampleDownloadHref("hello-server-minimal"),
-      text: exampleDetails("hello-server-minimal.py").text,
-      files: files("hello-server-minimal.py"),
+      key: "hello-web-api",
+      title: "Hello Web API",
+      path: "hello-web-api.py",
+      tag: "Web API",
+      art: "cloud",
+      download: exampleDownloadHref("hello-web-api"),
+      text: exampleDetails("hello-web-api.py").text,
+      files: files("hello-web-api.py"),
     },
     {
-      key: "list-materials",
-      title: "List Materials",
-      path: "list-materials.py",
+      key: "batching",
+      title: "Batching",
+      path: "batching.py",
       tag: "Local API",
-      art: "materials",
-      download: exampleDownloadHref("list-materials"),
-      text: exampleDetails("list-materials.py").text,
-      files: files("list-materials.py"),
+      art: "batch",
+      download: exampleDownloadHref("batching"),
+      text: exampleDetails("batching.py").text,
+      files: files("batching.py"),
     },
     {
       key: "print-dialog",
@@ -630,6 +621,16 @@ const buildExampleCards = () => {
       files: files("speedrun.py"),
     },
     {
+      key: "web-api-send-group-invitations",
+      title: "Send Group Invitations",
+      path: "web-api-send-group-invitations/",
+      tag: "Web API",
+      art: "invite",
+      download: exampleDownloadHref("web-api-send-group-invitations"),
+      text: exampleDetails("web-api-send-group-invitations/main.py").text,
+      files: sendGroupInvitationFiles,
+    },
+    {
       key: "web-sls-packer",
       title: "Web SLS Packer",
       path: "web-sls-packer/",
@@ -645,12 +646,19 @@ const buildExampleCards = () => {
 };
 
 const renderExamples = () => {
-  examplesList.innerHTML = buildExampleCards().map((example) => {
+  examplesList.innerHTML = buildExampleCards().map((example, index) => {
+    const filesId = `example-files-${index}`;
     return `
     <article class="example-card">
-      <a class="download-button" href="${escapeHtml(example.download)}" download>Download</a>
       ${exampleArt(example.art)}
       <div class="example-body">
+        <div class="example-actions">
+          <button class="example-toggle" type="button" data-example-toggle="${filesId}" aria-expanded="false">
+            <span>Show files</span>
+            <span class="example-toggle-icon" aria-hidden="true">▾</span>
+          </button>
+          <a class="download-button" href="${escapeHtml(example.download)}" download>Download</a>
+        </div>
         <div class="example-kicker">
           <span class="pill${example.tag === "Web API" ? " blue" : ""}">${escapeHtml(example.tag)}</span>
           <small>${escapeHtml(example.path)}</small>
@@ -658,7 +666,7 @@ const renderExamples = () => {
         <h3>${escapeHtml(example.title)}</h3>
         <p>${escapeHtml(example.text)}</p>
       </div>
-      <div class="example-files">
+      <div id="${filesId}" class="example-files" hidden>
         ${example.files.map((file) => `
           <section class="example-file">
             ${example.files.length > 1 ? `
@@ -673,7 +681,24 @@ const renderExamples = () => {
     </article>
   `;
   }).join("");
+  bindExampleToggles();
   highlightPythonSnippets(examplesList);
+};
+
+const bindExampleToggles = () => {
+  examplesList.querySelectorAll("[data-example-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const panel = examplesList.querySelector(`#${button.dataset.exampleToggle}`);
+      if (!panel) return;
+
+      const open = panel.hasAttribute("hidden");
+      panel.toggleAttribute("hidden", !open);
+      button.setAttribute("aria-expanded", String(open));
+      button.querySelector("span").textContent = open ? "Hide files" : "Show files";
+      const icon = button.querySelector(".example-toggle-icon");
+      if (icon) icon.textContent = open ? "▴" : "▾";
+    });
+  });
 };
 
 httpFilterButtons.forEach((button) => {

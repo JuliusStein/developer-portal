@@ -14,6 +14,7 @@
       </a>
       <nav>
         <a href="#getting-started">Getting Started</a>
+        <a href="#python-sdk">Python SDK</a>
         <a href="#reference">Function Reference</a>
         <a href="#examples">Examples</a>
         <a href="#http-documentation">HTTP API Documentation</a>
@@ -24,11 +25,11 @@
     <main id="top">
       <section class="hero">
         <div>
-          <p class="eyebrow">Local automation, Dashboard monitoring, and Python workflows</p>
+          <p class="eyebrow">Python SDK, Function References, and Example workflows</p>
           <h1>Formlabs Developer API</h1>
           <p class="hero-copy">
-            Start with the Python SDK, browse generated SDK functions, and expand the HTTP API
-            documentation when you need direct Local or Dashboard API requests.
+            Start with the Python SDK, or use direct HTTP calls to the Local and Web APIs. Use the examples to get started quickly,
+            and browse generated references when you need implementation detail.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="button primary" href="#getting-started">Start building</a>
@@ -50,13 +51,91 @@
       </section>
 
       <section id="getting-started" class="section">
-        <div class="section-heading">
+        <div class="section-heading compact">
           <p class="eyebrow">Getting started</p>
+          <h2>Get Setup for Development</h2>
+          <p>
+            To start developing locally, download PreForm-Server at the link below and add it to your project folder.
+            To connect to your Formlabs account using the web API, make a Dashboard application and request an OAuth token below. The following sections summarize the Python SDK,
+            HTTP fundamentals, and the endpoint reference.
+          </p>
+        </div>
+
+        <div class="route-grid">
+          <article class="route-card">
+            <div class="card-header">
+              <span class="pill">Local</span>
+              <h3>Automate job preparation on a workstation</h3>
+            </div>
+            <ol>
+              <li>Download PreFormServer for macOS or Windows from the <a href="https://support.formlabs.com/s/article/Formlabs-API-downloads-and-release-notes">Formlabs API downloads page</a>.</li>
+              <li>Start it with an explicit port, commonly <code>44388</code>.</li>
+              <li>Wait for <code>READY FOR INPUT</code> before sending requests.</li>
+              <li>Use absolute local file paths when loading or saving models and scenes.</li>
+            </ol>
+            <div class="code-switcher" data-code-switcher>
+              <div class="code-tabs" aria-label="Operating system">
+                <button class="active" type="button" data-code-toggle="unix">Unix</button>
+                <button type="button" data-code-toggle="windows">Windows</button>
+              </div>
+              <pre data-code-panel="unix"><code>./PreFormServer.app/Contents/MacOS/PreFormServer --port 44388
+
+curl http://localhost:44388/
+curl http://localhost:44388/scene/</code></pre>
+              <pre data-code-panel="windows" hidden><code>.\PreFormServer\PreFormServer.exe --port 44388
+
+curl.exe http://localhost:44388/
+curl.exe http://localhost:44388/scene/</code></pre>
+            </div>
+          </article>
+
+          <article class="route-card">
+            <div class="card-header">
+              <span class="pill blue">Web</span>
+              <h3>Monitor Dashboard-connected printers</h3>
+            </div>
+            <ol>
+              <li>Create <a href="https://dashboard.formlabs.com/#developer">Formlabs Dashboard application credentials</a>.</li>
+              <li>Request an OAuth access token with <code>client_credentials</code>.</li>
+              <li>Send the token as <code>Authorization: Bearer ...</code>.</li>
+              <li>Respect rate limits and refresh tokens before they expire.</li>
+            </ol>
+            <div class="code-switcher" data-code-switcher>
+              <div class="code-tabs" aria-label="Operating system">
+                <button class="active" type="button" data-code-toggle="unix">Unix</button>
+                <button type="button" data-code-toggle="windows">Windows</button>
+              </div>
+              <pre data-code-panel="unix"><code>curl -X POST https://api.formlabs.com/developer/v1/o/token/ \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=$CLIENT_ID" \
+  -d "client_secret=$CLIENT_SECRET"
+
+curl https://api.formlabs.com/developer/v1/printers/ \
+  -H "Authorization: Bearer $ACCESS_TOKEN"</code></pre>
+              <pre data-code-panel="windows" hidden><code>curl.exe -X POST https://api.formlabs.com/developer/v1/o/token/ `
+  -H "Content-Type: application/x-www-form-urlencoded" `
+  -d "grant_type=client_credentials" `
+  -d "client_id=$env:CLIENT_ID" `
+  -d "client_secret=$env:CLIENT_SECRET"
+
+curl.exe https://api.formlabs.com/developer/v1/printers/ `
+  -H "Authorization: Bearer $env:ACCESS_TOKEN"</code></pre>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="python-sdk" class="section">
+        <div class="section-heading">
+          <p class="eyebrow">Python SDK</p>
           <h2>Develop with the Python SDK</h2>
           <p>
             The <a href="https://github.com/Formlabs/formlabs-api-python">SDK repository</a> includes a minimal Local API helper, generated Local and Web
             clients, and runnable examples. The generated clients give typed request models;
-            the minimal local package leaves request formatting in your code.
+            the minimal local package leaves request formatting in your code. 
+            Follow these steps to install the SDK, run PreForm-Server, and run a simple API version check.
+            To start PreForm-Server in your python script, see the Hello Server and Hello Web examples below.
           </p>
         </div>
         <div class="sdk-grid">
@@ -118,7 +197,6 @@ with formlabs.ApiClient(configuration) as api_client:
                 <h3>Python SDK</h3>
                 <p>Generated API classes and models from both SDK docs folders.</p>
               </div>
-              <span id="sdk-count" class="count-pill"></span>
             </div>
             <div class="toolbar panel-toolbar" role="search">
               <input id="sdk-search" type="search" placeholder="Search SDK classes, methods, models, or properties">
@@ -155,88 +233,15 @@ with formlabs.ApiClient(configuration) as api_client:
           <summary>
             <span>
               <span class="eyebrow">HTTP API Documentation</span>
-              <strong>Direct Local and Web API routes</strong>
+              <strong>HTTP fundamentals and endpoint reference</strong>
             </span>
             <span class="summary-hint">Expand</span>
           </summary>
 
-          <div class="section-heading compact">
-            <h2>HTTP API Documentation</h2>
-            <p>
-              Use this section when you want direct REST-style HTTP calls instead of the
-              Python SDK. It includes Local API setup, Dashboard/Web API credentials,
-              HTTP fundamentals, and the endpoint reference.
-            </p>
-          </div>
-
-          <div class="route-grid">
-            <article class="route-card">
-              <div class="card-header">
-                <span class="pill">Local</span>
-                <h3>Automate job preparation on a workstation</h3>
-              </div>
-              <ol>
-                <li>Download PreFormServer for macOS or Windows from the <a href="https://support.formlabs.com/s/article/Formlabs-API-downloads-and-release-notes">Formlabs API downloads page</a>.</li>
-                <li>Start it with an explicit port, commonly <code>44388</code>.</li>
-                <li>Wait for <code>READY FOR INPUT</code> before sending requests.</li>
-                <li>Use absolute local file paths when loading or saving models and scenes.</li>
-              </ol>
-              <div class="code-switcher" data-code-switcher>
-                <div class="code-tabs" aria-label="Operating system">
-                  <button class="active" type="button" data-code-toggle="unix">Unix</button>
-                  <button type="button" data-code-toggle="windows">Windows</button>
-                </div>
-                <pre data-code-panel="unix"><code>./PreFormServer.app/Contents/MacOS/PreFormServer --port 44388
-
-curl http://localhost:44388/
-curl http://localhost:44388/scene/</code></pre>
-                <pre data-code-panel="windows" hidden><code>.\PreFormServer\PreFormServer.exe --port 44388
-
-curl.exe http://localhost:44388/
-curl.exe http://localhost:44388/scene/</code></pre>
-              </div>
-            </article>
-
-            <article class="route-card">
-              <div class="card-header">
-                <span class="pill blue">Cloud</span>
-                <h3>Monitor Dashboard-connected printers</h3>
-              </div>
-              <ol>
-                <li>Create <a href="https://dashboard.formlabs.com/#developer">Formlabs Dashboard application credentials</a>.</li>
-                <li>Request an OAuth access token with <code>client_credentials</code>.</li>
-                <li>Send the token as <code>Authorization: Bearer ...</code>.</li>
-                <li>Respect rate limits and refresh tokens before they expire.</li>
-              </ol>
-              <div class="code-switcher" data-code-switcher>
-                <div class="code-tabs" aria-label="Operating system">
-                  <button class="active" type="button" data-code-toggle="unix">Unix</button>
-                  <button type="button" data-code-toggle="windows">Windows</button>
-                </div>
-                <pre data-code-panel="unix"><code>curl -X POST https://api.formlabs.com/developer/v1/o/token/ \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=client_credentials" \
-  -d "client_id=$CLIENT_ID" \
-  -d "client_secret=$CLIENT_SECRET"
-
-curl https://api.formlabs.com/developer/v1/printers/ \
-  -H "Authorization: Bearer $ACCESS_TOKEN"</code></pre>
-                <pre data-code-panel="windows" hidden><code>curl.exe -X POST https://api.formlabs.com/developer/v1/o/token/ `
-  -H "Content-Type: application/x-www-form-urlencoded" `
-  -d "grant_type=client_credentials" `
-  -d "client_id=$env:CLIENT_ID" `
-  -d "client_secret=$env:CLIENT_SECRET"
-
-curl.exe https://api.formlabs.com/developer/v1/printers/ `
-  -H "Authorization: Bearer $env:ACCESS_TOKEN"</code></pre>
-              </div>
-            </article>
-          </div>
-
           <div class="split http-fundamentals">
             <div>
               <p class="eyebrow">HTTP fundamentals</p>
-              <h2>Use predictable requests and JSON responses</h2>
+              <h2>HTTP APIs</h2>
               <p>
                 Both APIs expose resources over HTTP. The Local API defaults to
                 <code>http://localhost:44388</code>; the Web API defaults to
@@ -258,7 +263,6 @@ curl.exe https://api.formlabs.com/developer/v1/printers/ `
                 <h3>HTTP APIs</h3>
                 <p>Endpoints, methods, request parameters, response types, and status codes.</p>
               </div>
-              <span id="http-count" class="count-pill"></span>
             </div>
             <div class="toolbar panel-toolbar" role="search">
               <input id="http-search" type="search" placeholder="Search HTTP endpoints or descriptions">

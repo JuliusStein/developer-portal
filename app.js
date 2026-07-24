@@ -7,9 +7,7 @@ const httpSearch = document.querySelector("#http-search");
 const sdkSearch = document.querySelector("#sdk-search");
 const httpFilterButtons = document.querySelectorAll("[data-http-filter]");
 const sdkFilterButtons = document.querySelectorAll("[data-sdk-filter]");
-const apiJumpLinks = document.querySelectorAll("[data-api-target]");
 const codeSwitchers = document.querySelectorAll("[data-code-switcher]");
-const httpDocumentation = document.querySelector(".http-documentation");
 const sdkExpandAllButton = document.querySelector("[data-sdk-expand-all]");
 const sdkCollapseAllButton = document.querySelector("[data-sdk-collapse-all]");
 
@@ -729,15 +727,6 @@ sdkCollapseAllButton?.addEventListener("click", () => {
   });
 });
 
-apiJumpLinks.forEach((link) => {
-  link.addEventListener("click", () => {
-    const target = link.dataset.apiTarget;
-    activeSdkFilter = target === "local" ? "Local SDK" : "Web SDK";
-    setActiveButton(sdkFilterButtons, "sdkFilter", activeSdkFilter);
-    renderSdkReference();
-  });
-});
-
 codeSwitchers.forEach((switcher) => {
   const buttons = switcher.querySelectorAll("[data-code-toggle]");
   const panels = switcher.querySelectorAll("[data-code-panel]");
@@ -753,10 +742,10 @@ codeSwitchers.forEach((switcher) => {
   });
 });
 
-httpSearch.addEventListener("input", renderHttpReference);
-sdkSearch.addEventListener("input", renderSdkReference);
+httpSearch?.addEventListener("input", renderHttpReference);
+sdkSearch?.addEventListener("input", renderSdkReference);
 
-renderHttpReference();
-renderSdkReference();
+if (httpList && httpSearch) renderHttpReference();
+if (sdkList && sdkSearch) renderSdkReference();
 renderExamples();
 highlightPythonSnippets();

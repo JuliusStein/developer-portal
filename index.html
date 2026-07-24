@@ -13,39 +13,39 @@
         <span>Developer</span>
       </a>
       <nav>
+        <a href="#top">Formlabs Developer API</a>
         <a href="#getting-started">Getting Started</a>
         <a href="#python-sdk">Python SDK</a>
-        <a href="#reference">Function Reference</a>
         <a href="#examples">Examples</a>
-        <a href="#http-documentation">HTTP API Documentation</a>
         <a href="#sources">Sources</a>
       </nav>
     </aside>
 
     <main id="top">
       <section class="hero">
-        <div>
-          <p class="eyebrow">Python SDK, Function References, and Example workflows</p>
+        <div class="hero-content">
+          <p class="eyebrow">Local API, Web API, Python SDK, and example workflows</p>
           <h1>Formlabs Developer API</h1>
           <p class="hero-copy">
             Start with the Python SDK, or use direct HTTP calls to the Local and Web APIs. Use the examples to get started quickly,
             and browse generated references when you need implementation detail.
           </p>
-          <div class="hero-actions" aria-label="Primary actions">
-            <a class="button primary" href="#getting-started">Start building</a>
-            <a class="button" href="#reference">Browse references</a>
-          </div>
         </div>
-        <div class="status-panel" aria-label="API route summary">
-          <a href="#reference" class="api-jump" data-api-target="local">
-            <span class="status-dot local"></span>
-            <strong>Local API</strong>
-            <p>Run PreFormServer on a workstation and automate scene prep, materials, devices, and print upload.</p>
+        <div class="documentation-ctas" aria-label="Documentation">
+          <a href="https://formlabs-dashboard-api-resources.s3.amazonaws.com/formlabs-local-api-latest.html" class="documentation-cta local" target="_blank" rel="noopener noreferrer">
+            <span class="cta-label">Prepare, Slice, and Upload Jobs</span>
+            <strong>Local API Documentation</strong>
+            <span class="cta-arrow" aria-hidden="true">→</span>
           </a>
-          <a href="#reference" class="api-jump" data-api-target="web">
-            <span class="status-dot cloud"></span>
-            <strong>Web API</strong>
-            <p>Use Dashboard credentials to monitor printers, prints, events, cartridges, tanks, and groups.</p>
+          <a href="https://formlabs-dashboard-api-resources.s3.amazonaws.com/formlabs-web-api-latest.html" class="documentation-cta web" target="_blank" rel="noopener noreferrer">
+            <span class="cta-label">Monitor Prints and Printers</span>
+            <strong>Web API Documentation</strong>
+            <span class="cta-arrow" aria-hidden="true">→</span>
+          </a>
+          <a href="https://github.com/Formlabs/formlabs-api-python" class="documentation-cta python" target="_blank" rel="noopener noreferrer">
+            <span class="cta-label">Develop in Python</span>
+            <strong>Python SDK Documentation</strong>
+            <span class="cta-arrow" aria-hidden="true">→</span>
           </a>
         </div>
       </section>
@@ -180,41 +180,6 @@ with formlabs.ApiClient(configuration) as api_client:
         </div>
       </section>
 
-      <section id="reference" class="section">
-        <div class="section-heading compact">
-          <p class="eyebrow">Function reference</p>
-          <h2>Python SDK reference</h2>
-          <p>
-            Search generated Python SDK classes, functions, and useful models from the Local
-            and Web SDK documentation before dropping down to direct HTTP API details.
-          </p>
-        </div>
-
-        <div class="reference-panels">
-          <article class="reference-panel">
-            <div class="panel-heading">
-              <div>
-                <h3>Python SDK</h3>
-                <p>Generated API classes and models from both SDK docs folders.</p>
-              </div>
-            </div>
-            <div class="toolbar panel-toolbar" role="search">
-              <input id="sdk-search" type="search" placeholder="Search SDK classes, methods, models, or properties">
-              <div class="reference-actions" aria-label="Class section controls">
-                <button type="button" data-sdk-expand-all>Expand all</button>
-                <button type="button" data-sdk-collapse-all>Collapse all</button>
-              </div>
-              <div class="segmented" aria-label="Python SDK filter">
-                <button class="active" data-sdk-filter="all" type="button">All</button>
-                <button data-sdk-filter="Local SDK" type="button">Local</button>
-                <button data-sdk-filter="Web SDK" type="button">Web</button>
-              </div>
-            </div>
-            <div id="sdk-reference-list" class="sdk-list scroll-pane"></div>
-          </article>
-        </div>
-      </section>
-
       <section id="examples" class="section">
         <div class="section-heading compact">
           <p class="eyebrow">Examples</p>
@@ -226,55 +191,6 @@ with formlabs.ApiClient(configuration) as api_client:
           </p>
         </div>
         <div id="examples-list" class="examples-list"></div>
-      </section>
-
-      <section id="http-documentation" class="section">
-        <details class="http-documentation">
-          <summary>
-            <span>
-              <span class="eyebrow">HTTP API Documentation</span>
-              <strong>HTTP fundamentals and endpoint reference</strong>
-            </span>
-            <span class="summary-hint">Expand</span>
-          </summary>
-
-          <div class="split http-fundamentals">
-            <div>
-              <p class="eyebrow">HTTP fundamentals</p>
-              <h2>HTTP APIs</h2>
-              <p>
-                Both APIs expose resources over HTTP. The Local API defaults to
-                <code>http://localhost:44388</code>; the Web API defaults to
-                <code>https://api.formlabs.com</code>. Successful responses use conventional
-                <code>2xx</code> status codes, client errors use <code>4xx</code>, and server
-                errors use <code>5xx</code>.
-              </p>
-            </div>
-            <div class="callout-list">
-              <div><strong>Local state</strong><p>Scenes are cached while PreFormServer runs. Prefer explicit scene IDs over deprecated default-scene endpoints.</p></div>
-              <div><strong>Async work</strong><p>Long-running Local API operations can use <code>?async=true</code> and then be polled through operations endpoints.</p></div>
-              <div><strong>Web limits</strong><p>The Web API documents per-IP and per-user limits. Handle <code>429</code> responses with the provided retry timing.</p></div>
-            </div>
-          </div>
-
-          <article class="reference-panel http-reference-panel">
-            <div class="panel-heading">
-              <div>
-                <h3>HTTP APIs</h3>
-                <p>Endpoints, methods, request parameters, response types, and status codes.</p>
-              </div>
-            </div>
-            <div class="toolbar panel-toolbar" role="search">
-              <input id="http-search" type="search" placeholder="Search HTTP endpoints or descriptions">
-              <div class="segmented" aria-label="HTTP API filter">
-                <button class="active" data-http-filter="all" type="button">All</button>
-                <button data-http-filter="Local API" type="button">Local</button>
-                <button data-http-filter="Web API" type="button">Web</button>
-              </div>
-            </div>
-            <div id="http-reference-list" class="reference-list scroll-pane"></div>
-          </article>
-        </details>
       </section>
 
       <section id="sources" class="section sources">

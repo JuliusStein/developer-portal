@@ -3,6 +3,7 @@ const data = window.FORMLABS_DATA;
 const httpList = document.querySelector("#http-reference-list");
 const sdkList = document.querySelector("#sdk-reference-list");
 const examplesList = document.querySelector("#examples-list");
+const themeToggle = document.querySelector(".theme-switch input");
 const httpSearch = document.querySelector("#http-search");
 const sdkSearch = document.querySelector("#sdk-search");
 const httpFilterButtons = document.querySelectorAll("[data-http-filter]");
@@ -13,6 +14,36 @@ const sdkCollapseAllButton = document.querySelector("[data-sdk-collapse-all]");
 
 let activeHttpFilter = "all";
 let activeSdkFilter = "all";
+
+const currentTheme = () => document.documentElement.dataset.theme || "light";
+
+const updateThemeToggle = () => {
+  if (!themeToggle) return;
+  themeToggle.checked = currentTheme() === "dark";
+};
+
+themeToggle?.addEventListener("change", () => {
+  const nextTheme = themeToggle.checked ? "dark" : "light";
+  document.documentElement.dataset.theme = nextTheme;
+  try {
+    localStorage.setItem("formlabs-theme", nextTheme);
+  } catch {
+    // The selected theme still applies for the current page.
+  }
+  updateThemeToggle();
+});
+
+updateThemeToggle();
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+  try {
+    if (localStorage.getItem("formlabs-theme")) return;
+  } catch {
+    // Follow the browser preference when storage is unavailable.
+  }
+  document.documentElement.dataset.theme = event.matches ? "dark" : "light";
+  updateThemeToggle();
+});
 
 const escapeHtml = (value = "") =>
   String(value)

@@ -4,6 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Formlabs API Developer Portal</title>
+    <script>
+      try {
+        const savedTheme = localStorage.getItem("formlabs-theme");
+        const preferredTheme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.dataset.theme = savedTheme || preferredTheme;
+      } catch {
+        document.documentElement.dataset.theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+    </script>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -23,6 +32,17 @@
 
     <main id="top">
       <section class="hero">
+        <label class="theme-switch">
+          <svg class="theme-label-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path>
+          </svg>
+          <input type="checkbox" aria-label="Dark mode">
+          <span class="theme-track" aria-hidden="true"><span class="theme-thumb"></span></span>
+          <svg class="theme-label-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path>
+          </svg>
+        </label>
         <div class="hero-content">
           <p class="eyebrow">Local API, Web API, Python SDK, and example workflows</p>
           <h1>Formlabs Developer API</h1>
@@ -70,8 +90,6 @@
             <ol>
               <li>Download PreFormServer for macOS or Windows from the <a href="https://support.formlabs.com/s/article/Formlabs-API-downloads-and-release-notes">Formlabs API downloads page</a>.</li>
               <li>Start it with an explicit port, commonly <code>44388</code>.</li>
-              <li>Wait for <code>READY FOR INPUT</code> before sending requests.</li>
-              <li>Use absolute local file paths when loading or saving models and scenes.</li>
             </ol>
             <div class="code-switcher" data-code-switcher>
               <div class="code-tabs" aria-label="Operating system">
@@ -97,8 +115,6 @@ curl.exe http://localhost:44388/scene/</code></pre>
             <ol>
               <li>Create <a href="https://dashboard.formlabs.com/#developer">Formlabs Dashboard application credentials</a>.</li>
               <li>Request an OAuth access token with <code>client_credentials</code>.</li>
-              <li>Send the token as <code>Authorization: Bearer ...</code>.</li>
-              <li>Respect rate limits and refresh tokens before they expire.</li>
             </ol>
             <div class="code-switcher" data-code-switcher>
               <div class="code-tabs" aria-label="Operating system">
@@ -194,16 +210,23 @@ with formlabs.ApiClient(configuration) as api_client:
       </section>
 
       <section id="sources" class="section sources">
-        <p class="eyebrow">Sources</p>
-        <h2>Original Formlabs documentation</h2>
-        <ul>
-          <li><a href="https://formlabs-dashboard-api-resources.s3.amazonaws.com/formlabs-local-api-latest.html">Local API reference</a></li>
-          <li><a href="https://formlabs-dashboard-api-resources.s3.amazonaws.com/formlabs-web-api-latest.html">Web API reference</a></li>
-          <li><a href="https://support.formlabs.com/s/article/Formlabs-API-downloads-and-release-notes?language=en_US">API downloads and release notes</a></li>
-          <li><a href="https://github.com/Formlabs/formlabs-api-python">Formlabs Python SDK</a></li>
-          <li><a href="https://github.com/Formlabs/formlabs-api-python/tree/main/local-api/lib/docs">Generated Local API SDK docs</a></li>
-          <li><a href="https://github.com/Formlabs/formlabs-api-python/tree/main/examples">SDK examples</a></li>
-        </ul>
+        <details class="sources-disclosure">
+          <summary>
+            <span>
+              <span class="eyebrow">Sources</span>
+              <strong>Original Formlabs documentation</strong>
+            </span>
+            <span class="summary-hint">Expand</span>
+          </summary>
+          <ul>
+            <li><a href="https://formlabs-dashboard-api-resources.s3.amazonaws.com/formlabs-local-api-latest.html">Local API reference</a></li>
+            <li><a href="https://formlabs-dashboard-api-resources.s3.amazonaws.com/formlabs-web-api-latest.html">Web API reference</a></li>
+            <li><a href="https://support.formlabs.com/s/article/Formlabs-API-downloads-and-release-notes?language=en_US">API downloads and release notes</a></li>
+            <li><a href="https://github.com/Formlabs/formlabs-api-python">Formlabs Python SDK</a></li>
+            <li><a href="https://github.com/Formlabs/formlabs-api-python/tree/main/local-api/lib/docs">Generated Local API SDK docs</a></li>
+            <li><a href="https://github.com/Formlabs/formlabs-api-python/tree/main/examples">SDK examples</a></li>
+          </ul>
+        </details>
       </section>
     </main>
 
